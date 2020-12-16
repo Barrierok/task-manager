@@ -23,5 +23,5 @@ rules:
     - error
     - props: true
       ignorePropertyModificationsFor:
-        - req
-        - reply
+      - req
+      - reply
