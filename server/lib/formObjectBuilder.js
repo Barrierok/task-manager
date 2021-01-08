@@ -20,6 +20,9 @@ export const buildFromObj = (object, errors = {}) => ({
 export const buildFromModel = (object, errors = {}) => ({
   init: true,
   name: 'form',
-  form: Object.keys(object).reduce((acc, field) => ({ ...acc, [field]: '' }), {}),
+  form: Object.keys(object).reduce(
+    (acc, field) => ({ ...acc, [field]: '' }),
+    {}
+  ),
   errors,
 });
