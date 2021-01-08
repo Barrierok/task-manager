@@ -2,10 +2,6 @@
 require('dotenv').config();
 const path = require('path');
 
-const migrations = {
-  directory: path.resolve('server', 'migrations'),
-};
-
 const connection = {
   host: process.env.DATABASE_HOST,
   port: process.env.DATABASE_PORT,
@@ -14,26 +10,29 @@ const connection = {
   database: process.env.DATABASE_NAME,
 };
 
+const common = {
+  useNullAsDefault: true,
+  migrations: {
+    directory: path.resolve('server', 'migrations'),
+  },
+};
+
 module.exports = {
   development: {
     client: 'sqlite3',
     connection: {
       filename: './database.sqlite',
     },
-    useNullAsDefault: true,
-    migrations,
+    ...common,
   },
   test: {
     client: 'sqlite3',
     connection: ':memory:',
-    useNullAsDefault: true,
-    migrations,
+    ...common,
   },
   production: {
     client: 'pg',
     connection: process.env.DATABASE_URL || connection,
-    useNullAsDefault: true,
-    migrations,
-    ssl: true,
+    ...common,
   },
 };
