@@ -1,5 +1,5 @@
 {
-  "name": "@hexlet/task-manager",
+  "name": "@hexlet/code",
   "version": "0.1.0",
   "description": "task manager application",
   "main": "server/index.js",
