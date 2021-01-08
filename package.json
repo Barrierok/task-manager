@@ -1,7 +1,7 @@
 {
   "name": "@hexlet/task-manager",
   "version": "0.1.0",
-  "description": "fastify-nodejs-application",
+  "description": "task manager application",
   "main": "server/index.js",
   "scripts": {
     "test": "jest",
@@ -25,12 +25,12 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hexlet-boilerplates/fastify-nodejs-application.git"
+    "url": "git+https://github.com/Barrierok/backend-project-lvl4.git"
   },
   "bugs": {
-    "url": "https://github.com/hexlet-boilerplates/fastify-nodejs-application/issues"
+    "url": "https://github.com/Barrierok/backend-project-lvl4/issues"
   },
-  "homepage": "https://github.com/hexlet-boilerplates/fastify-nodejs-application.git#readme",
+  "homepage": "https://github.com/Barrierok/backend-project-lvl4.git#readme",
   "dependencies": {
     "bootstrap": "^4.5.3",
     "dotenv": "^8.2.0",
