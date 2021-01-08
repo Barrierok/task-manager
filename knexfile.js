@@ -34,5 +34,8 @@ module.exports = {
     connection: process.env.DATABASE_URL || connection,
     useNullAsDefault: true,
     migrations,
+    defaultOptions: {
+      ssl: true,
+    },
   },
 };
