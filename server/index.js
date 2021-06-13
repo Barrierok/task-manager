@@ -1,5 +1,3 @@
-// @ts-check
-
 import dotenv from 'dotenv';
 import path from 'path';
 import fastify from 'fastify';
@@ -10,7 +8,6 @@ import fastifyFormbody from 'fastify-formbody';
 import fastifySecureSession from 'fastify-secure-session';
 import fastifyPassport from 'fastify-passport';
 import fastifySensible from 'fastify-sensible';
-// import fastifyFlash from 'fastify-flash';
 import fastifyReverseRoutes from 'fastify-reverse-routes';
 import fastifyMethodOverride from 'fastify-method-override';
 import fastifyObjectionjs from 'fastify-objectionjs';
@@ -49,7 +46,7 @@ const setUpViews = (app) => {
   });
 
   app.decorateReply('render', function render(viewPath, locals) {
-    this.view(viewPath, { ...locals, reply: this });
+    return this.view(viewPath, { ...locals, reply: this });
   });
 };
 
@@ -94,10 +91,10 @@ const registerPlugins = (app) => {
     },
   });
 
-  fastifyPassport.registerUserDeserializer((user) =>
-    app.objection.models.user.query().findById(user.id)
+  fastifyPassport.registerUserDeserializer((id) =>
+    app.objection.models.user.query().findById(id)
   );
-  fastifyPassport.registerUserSerializer((user) => Promise.resolve(user));
+  fastifyPassport.registerUserSerializer((user) => user.id);
   fastifyPassport.use(new FormStrategy('form', app));
   app.register(fastifyPassport.initialize());
   app.register(fastifyPassport.secureSession());
@@ -119,7 +116,11 @@ const registerPlugins = (app) => {
 export default () => {
   const app = fastify({
     logger: {
-      prettyPrint: isDevelopment,
+      ...(isDevelopment && {
+        prettyPrint: {
+          colorize: true,
+        },
+      }),
     },
   });
 
@@ -128,8 +129,9 @@ export default () => {
   setupLocalization();
   setUpViews(app);
   setUpStaticAssets(app);
-  addRoutes(app);
   addHooks(app);
+
+  app.after(() => addRoutes(app));
 
   return app;
 };
