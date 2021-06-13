@@ -1,5 +1,3 @@
-// @ts-check
-
 import { Model } from 'objection';
 import objectionUnique from 'objection-unique';
 
@@ -12,14 +10,20 @@ export default class User extends unique(Model) {
     return 'users';
   }
 
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+
   static get jsonSchema() {
     return {
       type: 'object',
-      required: ['email', 'password'],
+      required: ['email', 'password', 'firstName', 'lastName'],
       properties: {
         id: { type: 'integer' },
         email: { type: 'string', format: 'email' },
         password: { type: 'string', minLength: 3 },
+        firstName: { type: 'string', minLength: 1 },
+        lastName: { type: 'string', minLength: 1 },
       },
     };
   }

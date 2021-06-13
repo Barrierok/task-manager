@@ -1,5 +1,3 @@
-// @ts-check
-
 import i18next from 'i18next';
 
 export default (app) => {
@@ -27,8 +25,8 @@ export default (app) => {
         return reply.redirect(app.reverse('root'));
       })
     )
-    .delete('/session', (req, reply) => {
-      req.logOut();
+    .delete('/session', async (req, reply) => {
+      await req.logOut();
       req.flash('info', i18next.t('flash.session.delete.success'));
       reply.redirect(app.reverse('root'));
     });

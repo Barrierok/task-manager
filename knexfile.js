@@ -1,6 +1,7 @@
 // @ts-check
 require('dotenv').config();
 const path = require('path');
+const { knexSnakeCaseMappers } = require('objection');
 
 const connection = {
   host: process.env.DATABASE_HOST,
@@ -15,6 +16,7 @@ const common = {
   migrations: {
     directory: path.resolve('server', 'migrations'),
   },
+  ...knexSnakeCaseMappers(),
 };
 
 module.exports = {

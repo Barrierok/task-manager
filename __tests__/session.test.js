@@ -1,19 +1,25 @@
 // @ts-check
 
+import _ from 'lodash';
 import getApp from '../server/index.js';
-import { getTestData, prepareData } from './helpers/index.js';
+import encrypt from '../server/lib/secure';
+import getFakeUser from '../__fixtures__/getFakeUser';
 
 describe('test session', () => {
   let app;
   let knex;
-  let testData;
+  let existingUser;
 
   beforeAll(async () => {
+    existingUser = getFakeUser();
+
     app = await getApp();
     knex = app.objection.knex;
     await knex.migrate.latest();
-    await prepareData(app);
-    testData = getTestData();
+    await knex('users').insert({
+      ..._.omit(existingUser, 'password'),
+      passwordDigest: encrypt(existingUser.password),
+    });
   });
 
   it('test sign in / sign out', async () => {
@@ -28,7 +34,7 @@ describe('test session', () => {
       method: 'POST',
       url: app.reverse('session'),
       payload: {
-        data: testData.users.existing,
+        data: existingUser,
       },
     });
 
