@@ -87,10 +87,9 @@ export default (app) => {
           await req.logOut();
 
           req.flash('info', i18next.t('flash.users.delete.success'));
-          reply.redirect(app.reverse('users'));
         } catch (error) {
           req.log.error(error);
-          req.flash('error', i18next.t('flash.users.delete.error'));
+        } finally {
           reply.redirect(app.reverse('users'));
         }
       }

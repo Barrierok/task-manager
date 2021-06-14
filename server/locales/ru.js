@@ -28,10 +28,25 @@ module.exports = {
           success: 'Пользователь успешно удалён',
         },
       },
+      statuses: {
+        create: {
+          error: 'Не удалось создать статус',
+          success: 'Статус успешно создан',
+        },
+        edit: {
+          error: 'Не удалось изменить статус',
+          success: 'Статус успешно изменён',
+        },
+        delete: {
+          error: 'Не удалось удалить статус',
+          success: 'Статус успешно удалён',
+        },
+      },
       authError: 'Доступ запрещён! Пожалуйста, авторизируйтесь.',
     },
     layouts: {
       application: {
+        statuses: 'Статусы',
         users: 'Пользователи',
         signIn: 'Вход',
         signUp: 'Регистрация',
@@ -66,6 +81,24 @@ module.exports = {
           firstName: 'Имя',
           lastName: 'Фамилия',
           editUser: 'Изменение пользователя',
+          submit: 'Изменить',
+        },
+      },
+      statuses: {
+        id: 'ID',
+        name: 'Наименование',
+        createdAt: 'Дата создания',
+        editStatus: 'Изменить',
+        deleteStatus: 'Удалить',
+        createStatus: 'Создать статус',
+        new: {
+          creatingStatus: 'Создание статуса',
+          name: 'Наименование',
+          submit: 'Создать',
+        },
+        edit: {
+          editingStatus: 'Изменение статуса',
+          name: 'Наименование',
           submit: 'Изменить',
         },
       },

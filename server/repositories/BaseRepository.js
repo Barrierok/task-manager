@@ -1,6 +1,7 @@
 export default class BaseRepository {
-  constructor(app) {
+  constructor(app, model) {
     this.app = app;
+    this.model = model;
   }
 
   createModel() {

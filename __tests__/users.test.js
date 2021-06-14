@@ -4,6 +4,7 @@ import getApp from '../server/index.js';
 import encrypt from '../server/lib/secure.js';
 import UserRepository from '../server/repositories/UserRepository';
 import getFakeUser from '../__fixtures__/getFakeUser';
+import initSession from '../__fixtures__/utils';
 
 describe('test users CRUD', () => {
   let app;
@@ -85,19 +86,9 @@ describe('test users CRUD', () => {
     let userId;
 
     beforeEach(async () => {
-      userId = (await userRepository.insert(testData)).id.toString();
-
-      const responseSignIn = await app.inject({
-        method: 'POST',
-        url: app.reverse('session'),
-        payload: {
-          data: testData,
-        },
-      });
-
-      const [sessionCookie] = responseSignIn.cookies;
-      const { name, value } = sessionCookie;
-      cookie = { [name]: value };
+      const data = await initSession(app, testData);
+      cookie = data.cookie;
+      userId = data.userId;
     });
 
     it('edit user', async () => {
@@ -119,6 +110,9 @@ describe('test users CRUD', () => {
         method: 'GET',
         url: app.reverse('editUser', { id: otherUser.id.toString() }),
         cookies: cookie,
+        payload: {
+          data: getFakeUser(),
+        },
       });
 
       expect(response.statusCode).toBe(302);
@@ -180,9 +174,9 @@ describe('test users CRUD', () => {
 
       expect(response.statusCode).toBe(302);
 
-      const foundUser = await userRepository.getById(userId);
+      const deletedUser = await userRepository.getById(userId);
 
-      expect(foundUser).toBeUndefined();
+      expect(deletedUser).toBeUndefined();
     });
 
     it('delete other user', async () => {
@@ -213,7 +207,6 @@ describe('test users CRUD', () => {
   });
 
   afterEach(async () => {
-    // после каждого теста откатываем миграции
     await knex.migrate.rollback();
   });
 
