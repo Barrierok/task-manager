@@ -20,8 +20,8 @@ import webpackConfig from '../webpack.config.babel.js';
 import addRoutes from './routes/index.js';
 import getHelpers from './helpers/index.js';
 import knexConfig from '../knexfile.js';
-import models from './models/index.js';
 import FormStrategy from './lib/passportStrategies/FormStrategy.js';
+import UserRepository from './repositories/UserRepository';
 
 dotenv.config();
 const mode = process.env.NODE_ENV || 'development';
@@ -80,6 +80,7 @@ const addHooks = (app) => {
 };
 
 const registerPlugins = (app) => {
+  const userRepository = new UserRepository(app);
   app.register(fastifySensible);
   app.register(fastifyErrorPage);
   app.register(fastifyReverseRoutes.plugin);
@@ -90,14 +91,14 @@ const registerPlugins = (app) => {
       path: '/',
     },
   });
-
-  fastifyPassport.registerUserDeserializer((id) =>
-    app.objection.models.user.query().findById(id)
-  );
-  fastifyPassport.registerUserSerializer((user) => user.id);
-  fastifyPassport.use(new FormStrategy('form', app));
   app.register(fastifyPassport.initialize());
   app.register(fastifyPassport.secureSession());
+
+  fastifyPassport.use(new FormStrategy('form', app));
+
+  fastifyPassport.registerUserSerializer((user) => user.id);
+  fastifyPassport.registerUserDeserializer((id) => userRepository.getById(id));
+
   app.decorate('fp', fastifyPassport);
   app.decorate('authenticate', (...args) =>
     fastifyPassport.authenticate('form', {
@@ -107,10 +108,7 @@ const registerPlugins = (app) => {
   );
 
   app.register(fastifyMethodOverride);
-  app.register(fastifyObjectionjs, {
-    knexConfig: knexConfig[mode],
-    models,
-  });
+  app.register(fastifyObjectionjs, { knexConfig: knexConfig[mode] });
 };
 
 export default () => {

@@ -11,7 +11,7 @@ export default class BaseRepository {
     this.app.log.info(
       {
         model: this.model.name,
-        method,
+        method: method.name,
         data,
       },
       'ORM queries'
@@ -21,7 +21,7 @@ export default class BaseRepository {
   async validate(data) {
     const validatedData = await this.model.fromJson(data);
 
-    this.logging(this.validate.name, validatedData);
+    this.logging(this.validate, validatedData);
 
     return validatedData;
   }
@@ -29,7 +29,7 @@ export default class BaseRepository {
   async getById(id) {
     const data = await this.model.query().findById(id);
 
-    this.logging(this.getById.name, data);
+    this.logging(this.getById, data);
 
     return data;
   }
@@ -37,7 +37,7 @@ export default class BaseRepository {
   async getByParams(params) {
     const data = await this.model.query().findOne(params);
 
-    this.logging(this.getByParams.name, data);
+    this.logging(this.getByParams, data);
 
     return data;
   }
@@ -45,7 +45,7 @@ export default class BaseRepository {
   async getAll() {
     const data = await this.model.query();
 
-    this.logging(this.getAll.name, data);
+    this.logging(this.getAll, data);
 
     return data;
   }
@@ -54,7 +54,7 @@ export default class BaseRepository {
     const entity = await this.getById(id);
     const updatedData = await entity.$query().patchAndFetch(data);
 
-    this.logging(this.patch.name, updatedData);
+    this.logging(this.patch, updatedData);
 
     return updatedData;
   }
@@ -62,7 +62,7 @@ export default class BaseRepository {
   async deleteById(id) {
     await this.model.query().deleteById(id);
 
-    this.logging(this.deleteById.name, id);
+    this.logging(this.deleteById, id);
 
     return id;
   }
@@ -70,7 +70,7 @@ export default class BaseRepository {
   async insert(data) {
     const insertedData = await this.model.query().insertAndFetch(data);
 
-    this.logging(this.insert.name, insertedData);
+    this.logging(this.insert, insertedData);
 
     return insertedData;
   }

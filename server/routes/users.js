@@ -9,7 +9,6 @@ const checkRights = (app) => async (req, reply) => {
   } = req;
 
   if (Number(paramId) !== userId) {
-    req.log.error('Editing and deleting another user is prohibited');
     req.flash('error', i18next.t('flash.session.edit.error'));
     reply.redirect(app.reverse('users'));
   }
