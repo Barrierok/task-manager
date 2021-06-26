@@ -1,8 +1,9 @@
 import BaseRepository from './BaseRepository';
-import User from '../models/User';
 
 export default class UserRepository extends BaseRepository {
   constructor(app) {
-    super(app, User);
+    super();
+    this.app = app;
+    this.model = app.objection.models.user;
   }
 }

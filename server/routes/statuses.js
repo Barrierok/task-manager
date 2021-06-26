@@ -1,8 +1,10 @@
 import i18next from 'i18next';
 import StatusRepository from '../repositories/StatusRepository';
+import TaskRepository from '../repositories/TaskRepository';
 
 export default (app) => {
   const statusRepository = new StatusRepository(app);
+  const taskRepository = new TaskRepository(app);
 
   app
     .get(
@@ -75,16 +77,18 @@ export default (app) => {
       '/statuses/:id',
       { name: 'deleteStatus', preValidation: app.authenticate },
       async (req, reply) => {
-        try {
-          await statusRepository.deleteById(req.params.id);
+        const task = await taskRepository.getByParams({
+          statusId: req.params.id,
+        });
 
-          req.flash('info', i18next.t('flash.statuses.delete.success'));
-        } catch (error) {
-          req.log.error(error);
+        if (task) {
           req.flash('error', i18next.t('flash.statuses.delete.error'));
-        } finally {
-          reply.redirect(app.reverse('statuses'));
+        } else {
+          await statusRepository.deleteById(req.params.id);
+          req.flash('info', i18next.t('flash.statuses.delete.success'));
         }
+
+        reply.redirect(app.reverse('statuses'));
       }
     );
 };

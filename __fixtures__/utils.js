@@ -3,11 +3,11 @@ import UserRepository from '../server/repositories/UserRepository';
 /**
  * @param {Object} app
  * @param {Object} user
- * @returns {Promise<{ userId: number, cookie: Object }>}
+ * @return {Promise<{ userId: string, cookie: Object }>}
  */
 export default async (app, user) => {
   const userRepository = new UserRepository(app);
-  const userId = (await userRepository.insert(user)).id.toString();
+  const userId = (await userRepository.insert(user)).id;
 
   const responseSignIn = await app.inject({
     method: 'POST',
