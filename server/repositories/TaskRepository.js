@@ -1,9 +1,9 @@
 import BaseRepository from './BaseRepository';
 
-export default class UserRepository extends BaseRepository {
+export default class TaskRepository extends BaseRepository {
   constructor(app) {
     super();
     this.app = app;
-    this.model = app.objection.models.user;
+    this.model = app.objection.models.task;
   }
 }

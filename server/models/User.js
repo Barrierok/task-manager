@@ -1,5 +1,6 @@
 import { Model } from 'objection';
 import objectionUnique from 'objection-unique';
+import path from 'path';
 
 import encrypt from '../lib/secure.js';
 
@@ -27,6 +28,25 @@ export default class User extends unique(Model) {
       },
     };
   }
+
+  static relationMappings = {
+    executedTasks: {
+      relation: Model.HasManyRelation,
+      modelClass: path.join(__dirname, 'Task'),
+      join: {
+        from: 'user.id',
+        to: 'tasks.executorId',
+      },
+    },
+    createdTasks: {
+      relation: Model.HasManyRelation,
+      modelClass: path.join(__dirname, 'Task'),
+      join: {
+        from: 'user.id',
+        to: 'tasks.creatorId',
+      },
+    },
+  };
 
   set password(value) {
     this.passwordDigest = encrypt(value);

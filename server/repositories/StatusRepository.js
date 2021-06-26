@@ -1,8 +1,9 @@
 import BaseRepository from './BaseRepository';
-import Status from '../models/Status';
 
 export default class StatusRepository extends BaseRepository {
   constructor(app) {
-    super(app, Status);
+    super();
+    this.app = app;
+    this.model = app.objection.models.status;
   }
 }

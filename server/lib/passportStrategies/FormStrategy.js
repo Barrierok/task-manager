@@ -1,11 +1,10 @@
 import _ from 'lodash';
 import { Strategy } from 'fastify-passport';
-import UserRepository from '../../repositories/UserRepository';
 
 export default class FormStrategy extends Strategy {
   constructor(name, app) {
     super(name);
-    this.userRepository = new UserRepository(app);
+    this.app = app;
   }
 
   async authenticate(request) {
@@ -15,7 +14,9 @@ export default class FormStrategy extends Strategy {
 
     const email = _.get(request, 'body.data.email', null);
     const password = _.get(request, 'body.data.password', null);
-    const user = await this.userRepository.getByParams({ email });
+    const user = await this.app.objection.models.user
+      .query()
+      .findOne({ email });
     if (user && user.verifyPassword(password)) {
       return this.success(user);
     }

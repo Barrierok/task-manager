@@ -1,25 +1,25 @@
 import getApp from '../server/index.js';
-import StatusRepository from '../server/repositories/StatusRepository';
 import getFakeStatus from '../__fixtures__/getFakeStatus';
 import initSession from '../__fixtures__/utils';
 import getFakeUser from '../__fixtures__/getFakeUser';
+import getFakeTask from '../__fixtures__/getFakeTask';
 
 describe('test statuses CRUD', () => {
   let app;
   let knex;
   let existingStatus;
-  let statusRepository;
   let cookie;
+  let models;
 
   beforeAll(async () => {
     app = await getApp();
+    models = app.objection.models;
     knex = app.objection.knex;
-    statusRepository = new StatusRepository(app);
   });
 
   beforeEach(async () => {
     await knex.migrate.latest();
-    existingStatus = await statusRepository.insert(getFakeStatus());
+    existingStatus = await models.status.query().insert(getFakeStatus());
     const data = await initSession(app, getFakeUser());
     cookie = data.cookie;
   });
@@ -68,9 +68,9 @@ describe('test statuses CRUD', () => {
 
     expect(response.statusCode).toBe(302);
 
-    const createdStatus = await statusRepository.getByParams({
-      name: statusData.name,
-    });
+    const createdStatus = await models.status
+      .query()
+      .findOne({ name: statusData.name });
 
     expect(createdStatus).toMatchObject(statusData);
   });
@@ -102,7 +102,9 @@ describe('test statuses CRUD', () => {
 
     expect(response.statusCode).toBe(302);
 
-    const updatedStatus = await statusRepository.getById(existingStatus.id);
+    const updatedStatus = await models.status
+      .query()
+      .findById(existingStatus.id);
 
     expect(updatedStatus).toMatchObject(statusData);
   });
@@ -116,9 +118,32 @@ describe('test statuses CRUD', () => {
 
     expect(response.statusCode).toBe(302);
 
-    const deletedStatus = await statusRepository.getById(existingStatus.id);
+    const deletedStatus = await models.status
+      .query()
+      .findById(existingStatus.id);
 
     expect(deletedStatus).toBeUndefined();
+  });
+
+  it('delete status with task relate', async () => {
+    await models.task.query().insert({
+      ...getFakeTask(),
+      statusId: existingStatus.id,
+    });
+
+    const response = await app.inject({
+      method: 'DELETE',
+      cookies: cookie,
+      url: app.reverse('deleteStatus', { id: existingStatus.id.toString() }),
+    });
+
+    expect(response.statusCode).toBe(302);
+
+    const notDeletedStatus = await models.status
+      .query()
+      .findById(existingStatus.id);
+
+    expect(notDeletedStatus).not.toBeUndefined();
   });
 
   afterEach(async () => {

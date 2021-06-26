@@ -20,8 +20,8 @@ import webpackConfig from '../webpack.config.babel.js';
 import addRoutes from './routes/index.js';
 import getHelpers from './helpers/index.js';
 import knexConfig from '../knexfile.js';
+import models from './models';
 import FormStrategy from './lib/passportStrategies/FormStrategy.js';
-import UserRepository from './repositories/UserRepository';
 
 dotenv.config();
 const mode = process.env.NODE_ENV || 'development';
@@ -80,7 +80,6 @@ const addHooks = (app) => {
 };
 
 const registerPlugins = (app) => {
-  const userRepository = new UserRepository(app);
   app.register(fastifySensible);
   app.register(fastifyErrorPage);
   app.register(fastifyReverseRoutes.plugin);
@@ -97,7 +96,9 @@ const registerPlugins = (app) => {
   fastifyPassport.use(new FormStrategy('form', app));
 
   fastifyPassport.registerUserSerializer((user) => user.id);
-  fastifyPassport.registerUserDeserializer((id) => userRepository.getById(id));
+  fastifyPassport.registerUserDeserializer((id) =>
+    app.objection.models.user.query().findById(id)
+  );
 
   app.decorate('fp', fastifyPassport);
   app.decorate('authenticate', (...args) =>
@@ -108,7 +109,10 @@ const registerPlugins = (app) => {
   );
 
   app.register(fastifyMethodOverride);
-  app.register(fastifyObjectionjs, { knexConfig: knexConfig[mode] });
+  app.register(fastifyObjectionjs, {
+    knexConfig: knexConfig[mode],
+    models,
+  });
 };
 
 export default () => {

@@ -2,23 +2,22 @@ import _ from 'lodash';
 
 import getApp from '../server/index.js';
 import encrypt from '../server/lib/secure.js';
-import UserRepository from '../server/repositories/UserRepository';
 import getFakeUser from '../__fixtures__/getFakeUser';
 import initSession from '../__fixtures__/utils';
 
 describe('test users CRUD', () => {
   let app;
   let knex;
+  let models;
   let existingUser;
   let testData;
-  let userRepository;
 
   beforeAll(async () => {
     app = await getApp();
     knex = app.objection.knex;
+    models = app.objection.models;
     existingUser = getFakeUser();
     testData = getFakeUser();
-    userRepository = new UserRepository(app);
   });
 
   beforeEach(async () => {
@@ -63,7 +62,7 @@ describe('test users CRUD', () => {
         ..._.omit(testData, 'password'),
         passwordDigest: encrypt(testData.password),
       };
-      const user = await userRepository.getByParams({ email: testData.email });
+      const user = await models.user.query().findOne({ email: testData.email });
 
       expect(user).toMatchObject(expected);
     });
@@ -102,7 +101,7 @@ describe('test users CRUD', () => {
     });
 
     it('edit other user', async () => {
-      const otherUser = await userRepository.getByParams({
+      const otherUser = await models.user.query().findOne({
         email: existingUser.email,
       });
 
@@ -124,7 +123,7 @@ describe('test users CRUD', () => {
       const response = await app.inject({
         method: 'PATCH',
         cookies: cookie,
-        url: app.reverse('patchUser', { id: userId }),
+        url: app.reverse('patchUser', { id: userId.toString() }),
         payload: {
           data: newUserData,
         },
@@ -137,7 +136,7 @@ describe('test users CRUD', () => {
         passwordDigest: encrypt(newUserData.password),
       };
 
-      const updatedUser = await userRepository.getById(userId);
+      const updatedUser = await models.user.query().findById(userId);
 
       expect(updatedUser).toMatchObject(expected);
     });
@@ -145,7 +144,7 @@ describe('test users CRUD', () => {
     it('patch other user', async () => {
       const newUserData = getFakeUser();
 
-      const otherUser = await userRepository.getByParams({
+      const otherUser = await models.user.query().findOne({
         email: existingUser.email,
       });
 
@@ -160,7 +159,7 @@ describe('test users CRUD', () => {
 
       expect(response.statusCode).toBe(302);
 
-      const updatedUser = await userRepository.getById(otherUser.id);
+      const updatedUser = await models.user.query().findById(otherUser.id);
 
       expect(updatedUser).toMatchObject(otherUser);
     });
@@ -169,18 +168,18 @@ describe('test users CRUD', () => {
       const response = await app.inject({
         method: 'DELETE',
         cookies: cookie,
-        url: app.reverse('deleteUser', { id: userId }),
+        url: app.reverse('deleteUser', { id: userId.toString() }),
       });
 
       expect(response.statusCode).toBe(302);
 
-      const deletedUser = await userRepository.getById(userId);
+      const deletedUser = await models.user.query().findById(userId);
 
       expect(deletedUser).toBeUndefined();
     });
 
     it('delete other user', async () => {
-      const otherUser = await userRepository.getByParams({
+      const otherUser = await models.user.query().findOne({
         email: existingUser.email,
       });
 
@@ -192,7 +191,7 @@ describe('test users CRUD', () => {
 
       expect(response.statusCode).toBe(302);
 
-      const foundUser = await userRepository.getById(otherUser.id);
+      const foundUser = await models.user.query().findById(otherUser.id);
 
       expect(foundUser).toMatchObject(otherUser);
     });
