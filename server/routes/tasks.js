@@ -1,8 +1,12 @@
 import i18next from 'i18next';
 import TaskRepository from '../repositories/TaskRepository';
+import StatusRepository from '../repositories/StatusRepository';
+import UserRepository from '../repositories/UserRepository';
 
 export default (app) => {
   const tasksRepository = new TaskRepository(app);
+  const statusRepository = new StatusRepository(app);
+  const userRepository = new UserRepository(app);
 
   app
     .get(
@@ -14,11 +18,21 @@ export default (app) => {
       }
     )
     .get(
+      '/tasks/:id',
+      { name: 'task', preValidation: app.authenticate },
+      async (req, reply) => {
+        const task = await tasksRepository.getById(req.params.id);
+        return reply.render('tasks/task', { task });
+      }
+    )
+    .get(
       '/tasks/new',
-      { name: 'newTasks', preValidation: app.authenticate },
-      (req, reply) => {
+      { name: 'newTask', preValidation: app.authenticate },
+      async (req, reply) => {
         const task = tasksRepository.createModel();
-        reply.render('statuses/new', { task });
+        const statuses = await statusRepository.getAll();
+        const users = await userRepository.getAll();
+        reply.render('tasks/new', { task, statuses, users });
       }
     )
     .get(
@@ -26,12 +40,22 @@ export default (app) => {
       { name: 'editTask', preValidation: app.authenticate },
       async (req, reply) => {
         const task = await tasksRepository.getById(req.params.id);
-        return reply.render('tasks/edit', { task });
+        const statuses = await statusRepository.getAll();
+        const users = await userRepository.getAll();
+        return reply.render('tasks/edit', { task, statuses, users });
       }
     )
     .post('/tasks', { preValidation: app.authenticate }, async (req, reply) => {
       try {
-        const task = await tasksRepository.validate(req.body.data);
+        const { executorId, statusId, name, description } = req.body.data;
+
+        const task = await tasksRepository.validate({
+          name,
+          description,
+          statusId: Number(statusId),
+          executorId: Number(executorId),
+          creatorId: req.user.id,
+        });
         await tasksRepository.insert(task);
 
         req.flash('info', i18next.t('flash.tasks.create.success'));
@@ -57,10 +81,18 @@ export default (app) => {
           return reply.redirect(app.reverse('tasks'));
         } catch (error) {
           req.log.error(error);
+
           const task = await tasksRepository.getById(req.params.id);
+          const statuses = await statusRepository.getAll();
+          const users = await userRepository.getAll();
 
           req.flash('error', i18next.t('flash.tasks.edit.error'));
-          return reply.render('statuses/edit', { task, errors: error.data });
+          return reply.render('tasks/edit', {
+            task,
+            statuses,
+            users,
+            errors: error.data,
+          });
         }
       }
     )
@@ -74,7 +106,7 @@ export default (app) => {
           await tasksRepository.deleteById(req.params.id);
           req.flash('info', i18next.t('flash.tasks.delete.success'));
         } else {
-          req.flash('info', i18next.t('flash.tasks.delete.error'));
+          req.flash('error', i18next.t('flash.tasks.delete.error'));
         }
 
         reply.redirect(app.reverse('tasks'));

@@ -1,6 +1,7 @@
 import i18next from 'i18next';
 
 import UserRepository from '../repositories/UserRepository';
+import TaskRepository from '../repositories/TaskRepository';
 
 const checkRights = (app) => async (req, reply) => {
   const {
@@ -16,6 +17,7 @@ const checkRights = (app) => async (req, reply) => {
 
 export default (app) => {
   const userRepository = new UserRepository(app);
+  const taskRepository = new TaskRepository(app);
 
   app
     .get('/users', { name: 'users' }, async (req, reply) => {
@@ -82,16 +84,17 @@ export default (app) => {
         preHandler: checkRights(app),
       },
       async (req, reply) => {
-        try {
+        const tasks = await taskRepository.findByUser(req.params.id);
+
+        if (tasks.length === 0) {
           await userRepository.deleteById(req.params.id);
           await req.logOut();
-
           req.flash('info', i18next.t('flash.users.delete.success'));
-        } catch (error) {
-          req.log.error(error);
-        } finally {
-          reply.redirect(app.reverse('users'));
+        } else {
+          req.flash('error', i18next.t('flash.users.delete.error'));
         }
+
+        reply.redirect(app.reverse('users'));
       }
     );
 };

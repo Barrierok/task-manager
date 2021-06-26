@@ -48,7 +48,17 @@ describe('test tasks CRUD', () => {
     const response = await app.inject({
       method: 'GET',
       cookies: cookie,
-      url: app.reverse('newTasks'),
+      url: app.reverse('newTask'),
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  it('task page', async () => {
+    const response = await app.inject({
+      method: 'GET',
+      cookies: cookie,
+      url: app.reverse('task', { id: existingTask.id.toString() }),
     });
 
     expect(response.statusCode).toBe(200);
@@ -58,7 +68,7 @@ describe('test tasks CRUD', () => {
     const response = await app.inject({
       method: 'GET',
       cookies: cookie,
-      url: app.reverse('editTask', { id: existingTask.id }),
+      url: app.reverse('editTask', { id: existingTask.id.toString() }),
     });
 
     expect(response.statusCode).toBe(200);

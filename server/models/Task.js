@@ -6,6 +6,18 @@ export default class Task extends Model {
     return 'tasks';
   }
 
+  $parseJson(json, opt) {
+    // eslint-disable-next-line no-param-reassign
+    json = super.$parseJson(json, opt);
+
+    return {
+      ...json,
+      creatorId: Number(json.creatorId) || null,
+      statusId: Number(json.statusId) || null,
+      executorId: Number(json.executorId) || null,
+    };
+  }
+
   static get jsonSchema() {
     return {
       type: 'object',
@@ -16,7 +28,7 @@ export default class Task extends Model {
         description: { type: 'string' },
         statusId: { type: 'integer' },
         creatorId: { type: 'integer' },
-        executorId: { type: 'integer' },
+        executorId: { type: ['integer', 'null'] },
       },
     };
   }

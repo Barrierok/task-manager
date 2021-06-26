@@ -4,6 +4,7 @@ import getApp from '../server/index.js';
 import encrypt from '../server/lib/secure.js';
 import getFakeUser from '../__fixtures__/getFakeUser';
 import initSession from '../__fixtures__/utils';
+import getFakeTask from '../__fixtures__/getFakeTask';
 
 describe('test users CRUD', () => {
   let app;
@@ -176,6 +177,25 @@ describe('test users CRUD', () => {
       const deletedUser = await models.user.query().findById(userId);
 
       expect(deletedUser).toBeUndefined();
+    });
+
+    it('delete user related with tasks', async () => {
+      await models.task.query().insert({
+        ...getFakeTask(),
+        creatorId: userId,
+      });
+
+      const response = await app.inject({
+        method: 'DELETE',
+        cookies: cookie,
+        url: app.reverse('deleteUser', { id: userId.toString() }),
+      });
+
+      expect(response.statusCode).toBe(302);
+
+      const notDeletedUser = await models.user.query().findById(userId);
+
+      expect(notDeletedUser).not.toBeUndefined();
     });
 
     it('delete other user', async () => {
