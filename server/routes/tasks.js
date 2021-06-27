@@ -2,11 +2,18 @@ import i18next from 'i18next';
 import TaskRepository from '../repositories/TaskRepository';
 import StatusRepository from '../repositories/StatusRepository';
 import UserRepository from '../repositories/UserRepository';
+import LabelRepository from '../repositories/LabelRepository';
+
+const parseLabels = (labels = []) =>
+  Array.isArray(labels)
+    ? labels.map((label) => ({ id: Number(label) }))
+    : [{ id: Number(labels) }];
 
 export default (app) => {
   const tasksRepository = new TaskRepository(app);
   const statusRepository = new StatusRepository(app);
   const userRepository = new UserRepository(app);
+  const labelRepository = new LabelRepository(app);
 
   app
     .get(
@@ -32,7 +39,9 @@ export default (app) => {
         const task = tasksRepository.createModel();
         const statuses = await statusRepository.getAll();
         const users = await userRepository.getAll();
-        reply.render('tasks/new', { task, statuses, users });
+        const labels = await labelRepository.getAll();
+
+        return reply.render('tasks/new', { task, statuses, users, labels });
       }
     )
     .get(
@@ -42,29 +51,40 @@ export default (app) => {
         const task = await tasksRepository.getById(req.params.id);
         const statuses = await statusRepository.getAll();
         const users = await userRepository.getAll();
-        return reply.render('tasks/edit', { task, statuses, users });
+        const labels = await labelRepository.getAll();
+
+        return reply.render('tasks/edit', { task, statuses, users, labels });
       }
     )
     .post('/tasks', { preValidation: app.authenticate }, async (req, reply) => {
+      const { data } = req.body;
+
       try {
-        const { executorId, statusId, name, description } = req.body.data;
+        const { labels, ...taskData } = data;
 
         const task = await tasksRepository.validate({
-          name,
-          description,
-          statusId: Number(statusId),
-          executorId: Number(executorId),
+          ...taskData,
           creatorId: req.user.id,
         });
-        await tasksRepository.insert(task);
+
+        await tasksRepository.insert({
+          ...task,
+          labels: parseLabels(labels),
+        });
 
         req.flash('info', i18next.t('flash.tasks.create.success'));
         reply.redirect(app.reverse('tasks'));
       } catch (error) {
-        req.log.error(error);
+        const statuses = await statusRepository.getAll();
+        const users = await userRepository.getAll();
+        const labels = await labelRepository.getAll();
+
         req.flash('error', i18next.t('flash.tasks.create.error'));
         reply.render('tasks/new', {
-          task: req.body.data,
+          task: { ...data, labels: parseLabels(data.labels) },
+          statuses,
+          users,
+          labels,
           errors: error.data,
         });
       }
@@ -73,24 +93,33 @@ export default (app) => {
       '/tasks/:id',
       { name: 'patchTask', preValidation: app.authenticate },
       async (req, reply) => {
+        const id = Number(req.params.id);
+        const { data } = req.body;
+
         try {
-          const task = await tasksRepository.validate(req.body.data);
-          await tasksRepository.patch(req.params.id, task);
+          const { labels = [], ...taskData } = data;
+
+          const task = await tasksRepository.validate(taskData);
+
+          await tasksRepository.patch({
+            id,
+            ...task,
+            labels: parseLabels(labels),
+          });
 
           req.flash('info', i18next.t('flash.tasks.edit.success'));
           return reply.redirect(app.reverse('tasks'));
         } catch (error) {
-          req.log.error(error);
-
-          const task = await tasksRepository.getById(req.params.id);
           const statuses = await statusRepository.getAll();
           const users = await userRepository.getAll();
+          const labels = await labelRepository.getAll();
 
           req.flash('error', i18next.t('flash.tasks.edit.error'));
           return reply.render('tasks/edit', {
-            task,
+            task: { id, ...data, labels: parseLabels(data.labels) },
             statuses,
             users,
+            labels,
             errors: error.data,
           });
         }
@@ -103,6 +132,7 @@ export default (app) => {
         const task = await tasksRepository.getById(req.params.id);
 
         if (task.creatorId === req.user.id) {
+          await task.$relatedQuery('labels').unrelate();
           await tasksRepository.deleteById(req.params.id);
           req.flash('info', i18next.t('flash.tasks.delete.success'));
         } else {

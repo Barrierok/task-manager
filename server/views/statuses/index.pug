@@ -16,5 +16,5 @@ block content
           td= status.name
           td= formatDate(status.createdAt)
           td
-            a(href=route('editStatus', { id: `${status.id}` }))= t('views.statuses.editStatus')
-            +buttonTo(route('deleteStatus', { id: `${status.id}` }), 'delete')(class="btn btn-link" value=t('views.statuses.deleteStatus'))
+            a(href=route('editStatus', { id: `${status.id}` }))= t('layouts.application.edit')
+            +buttonTo(route('deleteStatus', { id: `${status.id}` }), 'delete')(class="btn btn-link" value=t('layouts.application.delete'))

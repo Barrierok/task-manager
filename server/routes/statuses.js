@@ -1,10 +1,8 @@
 import i18next from 'i18next';
 import StatusRepository from '../repositories/StatusRepository';
-import TaskRepository from '../repositories/TaskRepository';
 
 export default (app) => {
   const statusRepository = new StatusRepository(app);
-  const taskRepository = new TaskRepository(app);
 
   app
     .get(
@@ -38,17 +36,18 @@ export default (app) => {
       '/statuses',
       { preValidation: app.authenticate },
       async (req, reply) => {
+        const { data } = req.body;
+
         try {
-          const status = await statusRepository.validate(req.body.data);
+          const status = await statusRepository.validate(data);
           await statusRepository.insert(status);
 
           req.flash('info', i18next.t('flash.statuses.create.success'));
           reply.redirect(app.reverse('statuses'));
         } catch (error) {
-          req.log.error(error);
           req.flash('error', i18next.t('flash.statuses.create.error'));
           reply.render('statuses/new', {
-            status: req.body.data,
+            status: data,
             errors: error.data,
           });
         }
@@ -58,18 +57,20 @@ export default (app) => {
       '/statuses/:id',
       { name: 'patchStatus', preValidation: app.authenticate },
       async (req, reply) => {
+        const { data } = req.body;
+
         try {
-          const status = await statusRepository.validate(req.body.data);
+          const status = await statusRepository.validate(data);
           await statusRepository.patch(req.params.id, status);
 
           req.flash('info', i18next.t('flash.statuses.edit.success'));
           return reply.redirect(app.reverse('statuses'));
         } catch (error) {
-          req.log.error(error);
-          const status = await statusRepository.getById(req.params.id);
-
           req.flash('error', i18next.t('flash.statuses.edit.error'));
-          return reply.render('statuses/edit', { status, errors: error.data });
+          return reply.render('statuses/edit', {
+            status: data,
+            errors: error.data,
+          });
         }
       }
     )
@@ -77,11 +78,12 @@ export default (app) => {
       '/statuses/:id',
       { name: 'deleteStatus', preValidation: app.authenticate },
       async (req, reply) => {
-        const task = await taskRepository.getByParams({
-          statusId: req.params.id,
-        });
+        const tasks = await statusRepository.getRelatedData(
+          req.params.id,
+          'tasks'
+        );
 
-        if (task) {
+        if (tasks.length > 0) {
           req.flash('error', i18next.t('flash.statuses.delete.error'));
         } else {
           await statusRepository.deleteById(req.params.id);

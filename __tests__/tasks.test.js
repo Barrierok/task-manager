@@ -1,8 +1,10 @@
+import _ from 'lodash';
 import getApp from '../server';
 import initSession from '../__fixtures__/utils';
 import getFakeUser from '../__fixtures__/getFakeUser';
 import getFakeTask from '../__fixtures__/getFakeTask';
 import getFakeStatus from '../__fixtures__/getFakeStatus';
+import getFakeLabel from '../__fixtures__/getFakeLabel';
 
 describe('test tasks CRUD', () => {
   let app;
@@ -11,6 +13,7 @@ describe('test tasks CRUD', () => {
   let cookie;
   let existingStatus;
   let existingTask;
+  let existingLabel;
   let userId;
 
   beforeAll(async () => {
@@ -26,6 +29,7 @@ describe('test tasks CRUD', () => {
     userId = data.userId;
 
     existingStatus = await models.status.query().insert(getFakeStatus());
+    existingLabel = await models.label.query().insert(getFakeLabel());
     existingTask = await models.task.query().insert({
       ...getFakeTask(),
       creatorId: userId,
@@ -80,6 +84,7 @@ describe('test tasks CRUD', () => {
       executorId: userId,
       creatorId: userId,
       statusId: existingStatus.id,
+      labels: [existingLabel.id],
     };
 
     const response = await app.inject({
@@ -97,7 +102,14 @@ describe('test tasks CRUD', () => {
       name: taskData.name,
     });
 
-    expect(createdTask).toMatchObject(taskData);
+    expect(createdTask).toMatchObject(_.omit(taskData, 'labels'));
+
+    const relatedLabel = await createdTask
+      .$relatedQuery('labels')
+      .where('labelId', existingLabel.id)
+      .first();
+
+    expect(relatedLabel).toMatchObject(existingLabel);
   });
 
   it('patch task', async () => {
@@ -106,6 +118,7 @@ describe('test tasks CRUD', () => {
       executorId: userId,
       creatorId: userId,
       statusId: existingStatus.id,
+      labels: [existingLabel.id],
     };
 
     const response = await app.inject({
@@ -121,7 +134,14 @@ describe('test tasks CRUD', () => {
 
     const updatedTask = await models.task.query().findById(existingTask.id);
 
-    expect(updatedTask).toMatchObject(taskData);
+    expect(updatedTask).toMatchObject(_.omit(taskData, 'labels'));
+
+    const relatedLabel = await updatedTask
+      .$relatedQuery('labels')
+      .where('labelId', existingLabel.id)
+      .first();
+
+    expect(relatedLabel).toMatchObject(existingLabel);
   });
 
   it('delete task', async () => {
