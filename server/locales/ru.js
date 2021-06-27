@@ -42,6 +42,20 @@ module.exports = {
           success: 'Статус успешно удалён',
         },
       },
+      labels: {
+        create: {
+          error: 'Не удалось создать метку',
+          success: 'Метка успешно создана',
+        },
+        edit: {
+          error: 'Не удалось изменить метку',
+          success: 'Метка успешно изменена',
+        },
+        delete: {
+          error: 'Не удалось удалить метку',
+          success: 'Метка успешно удалена',
+        },
+      },
       tasks: {
         create: {
           success: 'Задача успешно создана',
@@ -60,8 +74,11 @@ module.exports = {
     },
     layouts: {
       application: {
+        edit: 'Изменить',
+        delete: 'Удалить',
         tasks: 'Задачи',
         statuses: 'Статусы',
+        labels: 'Метки',
         users: 'Пользователи',
         signIn: 'Вход',
         signUp: 'Регистрация',
@@ -81,24 +98,25 @@ module.exports = {
         status: 'Статус',
         creator: 'Автор',
         executor: 'Исполнитель',
+        labels: 'Метки',
         createdAt: 'Дата создания',
         createTask: 'Создать задачу',
-        editTask: 'Изменить',
-        deleteTask: 'Удалить',
         new: {
-          creatingStatus: 'Создание задачи',
+          creatingTask: 'Создание задачи',
           name: 'Наименование',
           description: 'Описание',
           status: 'Статус',
           executor: 'Исполнитель',
+          labels: 'Метки',
           submit: 'Создать',
         },
         edit: {
-          editingStatus: 'Изменение задачи',
+          editingTask: 'Изменение задачи',
           name: 'Наименование',
           description: 'Описание',
           status: 'Статус',
           executor: 'Исполнитель',
+          labels: 'Метки',
           submit: 'Изменить',
         },
       },
@@ -107,8 +125,6 @@ module.exports = {
         email: 'Email',
         fullName: 'Полное имя',
         createdAt: 'Дата создания',
-        editUser: 'Изменить',
-        deleteUser: 'Удалить',
         new: {
           email: 'Email',
           password: 'Пароль',
@@ -130,8 +146,6 @@ module.exports = {
         id: 'ID',
         name: 'Наименование',
         createdAt: 'Дата создания',
-        editStatus: 'Изменить',
-        deleteStatus: 'Удалить',
         createStatus: 'Создать статус',
         new: {
           creatingStatus: 'Создание статуса',
@@ -140,6 +154,22 @@ module.exports = {
         },
         edit: {
           editingStatus: 'Изменение статуса',
+          name: 'Наименование',
+          submit: 'Изменить',
+        },
+      },
+      labels: {
+        id: 'ID',
+        name: 'Наименование',
+        createdAt: 'Дата создания',
+        createLabel: 'Создать метку',
+        new: {
+          creatingLabel: 'Создание метки',
+          name: 'Наименование',
+          submit: 'Создать',
+        },
+        edit: {
+          editingLabel: 'Изменение метки',
           name: 'Наименование',
           submit: 'Изменить',
         },

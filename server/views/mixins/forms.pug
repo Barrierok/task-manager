@@ -33,22 +33,23 @@ mixin textarea(entity, propertyName, errors = {}, labelValue)
     if !_.isEmpty(propertyErrors)
       .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')
 
-mixin select(entity, propertyName, options, optionName, errors = {}, labelValue)
+mixin select(entity, propertyName, options, optionName, isMultiple, errors = {}, labelValue)
   - propertyErrors = _.get(errors, propertyName, [])
   - inputId = getInputId(propertyName)
-  - value = _.get(entity, propertyName, '')
+  - value = _.get(entity, propertyName, isMultiple ? [] : '')
   .mb-3(class=(errors[propertyName] && 'has-danger'))
     label(for= inputId)= labelValue
     select(
       id= inputId
       name= getInputName(propertyName)
       class= 'form-control' + (propertyErrors.length > 0 ? ' is-invalid' : '')
-      value= value
     )&attributes(attributes)
-      option(value='' selected= value === '')= ''
+      if (!isMultiple)
+        option(value='' selected= value === '')= ''
       each option in options
-        - isSelected = value === _.get(option, 'id', '')
-        option(value=_.get(option, 'id', '') selected= isSelected)=_.get(option, optionName, '')
+        - optionId = _.get(option, 'id', '')
+        - isSelected = isMultiple ? value.find(item => item.id === optionId) : Number(value) === Number(optionId)
+        option(value= optionId selected= isSelected)= _.get(option, optionName, '')
     if !_.isEmpty(propertyErrors)
       .invalid-feedback= propertyErrors.map(({ message }) => message).join('. ')
 

@@ -1,12 +1,13 @@
 extends ../layouts/application.pug
 
 block header
-  = t('views.tasks.new.creatingStatus')
+  = t('views.tasks.new.creatingTask')
 
 block content
   +formFor()(action=route('tasks') method='post')
     +input(task, 'name', errors, t('views.tasks.new.name'))(type="text")
     +textarea(task, 'description', errors, t('views.tasks.new.description'))
-    +select(task, 'statusId', statuses, 'name', errors, t('views.tasks.new.status'))
-    +select(task, 'executorId', users, 'fullName', errors, t('views.tasks.new.executor'))
+    +select(task, 'statusId', statuses, 'name', false, errors, t('views.tasks.new.status'))
+    +select(task, 'executorId', users, 'fullName', false, errors, t('views.tasks.new.executor'))
+    +select(task, 'labels', labels, 'name', true, errors, t('views.tasks.new.labels'))(multiple)
     +submit(task)(value=t('views.tasks.new.submit'))

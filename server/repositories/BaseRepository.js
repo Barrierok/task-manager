@@ -70,4 +70,12 @@ export default class BaseRepository {
 
     return insertedData;
   }
+
+  async getRelatedData(id, relation) {
+    const data = this.model.relatedQuery(relation).for(id);
+
+    this.logging(this.getRelatedData, data);
+
+    return data;
+  }
 }

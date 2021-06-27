@@ -23,5 +23,5 @@ block content
           td= _.get(task, ['executor', 'fullName'], '')
           td= formatDate(task.createdAt)
           td
-            a(href=route('editTask', { id: `${task.id}` }))= t('views.tasks.editTask')
-            +buttonTo(route('deleteTask', { id: `${task.id}` }), 'delete')(class="btn btn-link" value=t('views.tasks.deleteTask'))
+            a(href=route('editTask', { id: `${task.id}` }))= t('layouts.application.edit')
+            +buttonTo(route('deleteTask', { id: `${task.id}` }), 'delete')(class="btn btn-link" value=t('layouts.application.delete'))

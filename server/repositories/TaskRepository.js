@@ -24,6 +24,7 @@ export default class TaskRepository extends BaseRepository {
       status: true,
       executor: true,
       creator: true,
+      labels: true,
     });
 
     this.logging(this.getById, data);
@@ -40,5 +41,43 @@ export default class TaskRepository extends BaseRepository {
     this.logging(this.findByUser, data);
 
     return data;
+  }
+
+  async insert(data) {
+    const options = {
+      relate: true,
+      unrelate: true,
+      noUpdate: ['labels'],
+    };
+
+    const upsertedData = await this.model.transaction(async (trx) => {
+      const task = await this.model
+        .query(trx)
+        .upsertGraphAndFetch(data, options);
+      return task;
+    });
+
+    this.logging(this.insert, upsertedData);
+
+    return upsertedData;
+  }
+
+  async patch(data) {
+    const options = {
+      relate: true,
+      unrelate: true,
+      noUpdate: ['labels'],
+    };
+
+    const upsertedData = await this.model.transaction(async (trx) => {
+      const task = await this.model
+        .query(trx)
+        .upsertGraphAndFetch(data, options);
+      return task;
+    });
+
+    this.logging(this.patch, upsertedData);
+
+    return upsertedData;
   }
 }
