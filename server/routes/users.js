@@ -48,7 +48,6 @@ export default (app) => {
         req.flash('info', i18next.t('flash.users.create.success'));
         reply.redirect(app.reverse('root'));
       } catch (error) {
-        req.log.error(error);
         req.flash('error', i18next.t('flash.users.create.error'));
         reply.render('users/new', { user: req.body.data, errors: error.data });
       }
@@ -68,7 +67,6 @@ export default (app) => {
           req.flash('info', i18next.t('flash.users.edit.success'));
           return reply.redirect(app.reverse('users'));
         } catch (error) {
-          req.log.error(error);
           const user = await userRepository.getById(req.params.id);
 
           req.flash('error', i18next.t('flash.users.edit.error'));
