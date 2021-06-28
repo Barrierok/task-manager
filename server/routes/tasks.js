@@ -4,6 +4,14 @@ import StatusRepository from '../repositories/StatusRepository';
 import UserRepository from '../repositories/UserRepository';
 import LabelRepository from '../repositories/LabelRepository';
 
+const parseQuery = (querystring) =>
+  Object.entries(querystring).reduce((acc, [key, value]) => {
+    if (value) {
+      return { ...acc, [key]: value };
+    }
+    return acc;
+  }, {});
+
 const parseLabels = (labels = []) =>
   Array.isArray(labels)
     ? labels.map((label) => ({ id: Number(label) }))
@@ -20,8 +28,24 @@ export default (app) => {
       '/tasks',
       { name: 'tasks', preValidation: app.authenticate },
       async (req, reply) => {
-        const tasks = await tasksRepository.getAll();
-        return reply.render('tasks/index', { tasks });
+        const tasks = await tasksRepository.getAll(
+          parseQuery({
+            ...req.query,
+            creator: req.query.isCreatorUser ? req.user.id : '',
+          })
+        );
+
+        const statuses = await statusRepository.getAll();
+        const users = await userRepository.getAll();
+        const labels = await labelRepository.getAll();
+
+        return reply.render('tasks/index', {
+          tasks,
+          statuses,
+          users,
+          labels,
+          filters: req.query,
+        });
       }
     )
     .get(

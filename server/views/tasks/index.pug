@@ -2,6 +2,15 @@ extends ../layouts/application.pug
 
 block content
   a(href=route('newTask') class="nav-link")= t('views.tasks.createTask')
+  .card
+    .card-body.p-2.bg-light
+      +formFor()(action=route('tasks') method='get')
+        .row
+          +filterSelect('status', statuses, 'name', t('views.tasks.status'))
+          +filterSelect('executor', users, 'fullName', t('views.tasks.executor'))
+          +filterSelect('label', labels, 'name', t('views.tasks.label'))
+        +filterCheck('isCreatorUser', t('views.tasks.isCreatorUser'))
+        +submit(filters)(value=t('views.tasks.submitFilter'))
   table.table.table-striped
     thead
       tr

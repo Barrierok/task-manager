@@ -1,0 +1,26 @@
+- const getFilterValue = (property) => _.get(filters, property)
+- const getSelectId = (property) => `data_${property}`
+
+mixin filterSelect(propertyName, options, optionName, label)
+  - value = Number(getFilterValue(propertyName))
+  - selectId = getSelectId(propertyName)
+  .col
+    .mb-3
+      label(for= selectId)= label
+      select.form-control.ml-2.mr-3(id= selectId name= propertyName)
+        option(value='', selected= value === '')
+        each option in options
+          option(value=option.id, selected= value === option.id)= option[optionName]
+
+mixin filterCheck(propertyName, label)
+  - value = getFilterValue(propertyName)
+  - id = getSelectId(propertyName)
+  .mb-3.form-check
+    input.form-check-input(
+      type= "checkbox"
+      name= propertyName
+      id= id
+      checked= value
+    )
+    label.form-check-label(for= id)= label
+

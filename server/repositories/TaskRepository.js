@@ -7,12 +7,15 @@ export default class TaskRepository extends BaseRepository {
     this.model = app.objection.models.task;
   }
 
-  async getAll() {
-    const data = await this.model.query().withGraphFetched({
-      status: true,
-      executor: true,
-      creator: true,
-    });
+  async getAll({ status, executor, label, creator }) {
+    const data = await this.model
+      .query()
+      .skipUndefined()
+      .withGraphJoined('[status, creator, executor, labels]')
+      .where('executorId', executor)
+      .where('creatorId', creator)
+      .where('labels:id', label)
+      .where('statusId', status);
 
     this.logging(this.getAll, data);
 
@@ -20,12 +23,10 @@ export default class TaskRepository extends BaseRepository {
   }
 
   async getById(id) {
-    const [data] = await this.model.query().where('id', id).withGraphFetched({
-      status: true,
-      executor: true,
-      creator: true,
-      labels: true,
-    });
+    const [data] = await this.model
+      .query()
+      .where('id', id)
+      .withGraphFetched('[status, creator, executor, labels]');
 
     this.logging(this.getById, data);
 
@@ -50,12 +51,9 @@ export default class TaskRepository extends BaseRepository {
       noUpdate: ['labels'],
     };
 
-    const upsertedData = await this.model.transaction(async (trx) => {
-      const task = await this.model
-        .query(trx)
-        .upsertGraphAndFetch(data, options);
-      return task;
-    });
+    const upsertedData = await this.model.transaction((trx) =>
+      this.model.query(trx).upsertGraphAndFetch(data, options)
+    );
 
     this.logging(this.insert, upsertedData);
 
@@ -69,12 +67,9 @@ export default class TaskRepository extends BaseRepository {
       noUpdate: ['labels'],
     };
 
-    const upsertedData = await this.model.transaction(async (trx) => {
-      const task = await this.model
-        .query(trx)
-        .upsertGraphAndFetch(data, options);
-      return task;
-    });
+    const upsertedData = await this.model.transaction((trx) =>
+      this.model.query(trx).upsertGraphAndFetch(data, options)
+    );
 
     this.logging(this.patch, upsertedData);
 
