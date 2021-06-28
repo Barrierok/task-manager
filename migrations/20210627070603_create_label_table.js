@@ -1,4 +1,3 @@
-
 exports.up = (knex) =>
   knex.schema
     .createTable('labels', (table) => {
@@ -14,17 +13,16 @@ exports.up = (knex) =>
         .unsigned()
         .references('id')
         .inTable('tasks')
-        .onDelete('RESTRICT')
+        .onDelete('RESTRICT');
       table
         .integer('labelId')
         .unsigned()
         .references('id')
         .inTable('labels')
-        .onDelete('RESTRICT')
+        .onDelete('RESTRICT');
       table.timestamp('created_at').defaultTo(knex.fn.now());
       table.timestamp('updated_at').defaultTo(knex.fn.now());
     });
 
-exports.down = (knex) => knex.schema
-  .dropTable('tasks_labels')
-  .dropTable('labels');
+exports.down = (knex) =>
+  knex.schema.dropTable('tasks_labels').dropTable('labels');
