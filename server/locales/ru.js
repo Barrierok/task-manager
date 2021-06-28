@@ -99,6 +99,9 @@ module.exports = {
         creator: 'Автор',
         executor: 'Исполнитель',
         labels: 'Метки',
+        label: 'Метка',
+        submitFilter: 'Показать',
+        isCreatorUser: 'Только мои задачи',
         createdAt: 'Дата создания',
         createTask: 'Создать задачу',
         new: {
