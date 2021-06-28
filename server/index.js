@@ -11,6 +11,7 @@ import fastifySensible from 'fastify-sensible';
 import fastifyReverseRoutes from 'fastify-reverse-routes';
 import fastifyMethodOverride from 'fastify-method-override';
 import fastifyObjectionjs from 'fastify-objectionjs';
+import Rollbar from 'rollbar';
 import qs from 'qs';
 import Pug from 'pug';
 import i18next from 'i18next';
@@ -79,6 +80,18 @@ const addHooks = (app) => {
   });
 };
 
+const initRollbar = (app) => {
+  const rollbar = new Rollbar({
+    accessToken: process.env.ROLLBAR_TOKEN,
+    captureUncaught: true,
+    captureUnhandledRejections: true,
+  });
+
+  app.setErrorHandler((error, request, reply) => {
+    rollbar.error(`Error: ${error}`, request, reply);
+  });
+};
+
 const registerPlugins = (app) => {
   app.register(fastifySensible);
   app.register(fastifyErrorPage);
@@ -132,6 +145,7 @@ export default () => {
   setUpViews(app);
   setUpStaticAssets(app);
   addHooks(app);
+  initRollbar(app);
 
   app.after(() => addRoutes(app));
 
