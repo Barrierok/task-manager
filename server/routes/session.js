@@ -23,7 +23,7 @@ export default (app) => {
         await req.logIn(user);
         req.flash('success', i18next.t('flash.session.create.success'));
         return reply.redirect(app.reverse('root'));
-      })
+      }),
     )
     .delete('/session', async (req, reply) => {
       await req.logOut();

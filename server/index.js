@@ -109,17 +109,13 @@ const registerPlugins = (app) => {
   fastifyPassport.use(new FormStrategy('form', app));
 
   fastifyPassport.registerUserSerializer((user) => user.id);
-  fastifyPassport.registerUserDeserializer((id) =>
-    app.objection.models.user.query().findById(id)
-  );
+  fastifyPassport.registerUserDeserializer((id) => app.objection.models.user.query().findById(id));
 
   app.decorate('fp', fastifyPassport);
-  app.decorate('authenticate', (...args) =>
-    fastifyPassport.authenticate('form', {
-      failureRedirect: app.reverse('root'),
-      failureFlash: i18next.t('flash.authError'),
-    })(...args)
-  );
+  app.decorate('authenticate', (...args) => fastifyPassport.authenticate('form', {
+    failureRedirect: app.reverse('root'),
+    failureFlash: i18next.t('flash.authError'),
+  })(...args));
 
   app.register(fastifyMethodOverride);
   app.register(fastifyObjectionjs, {

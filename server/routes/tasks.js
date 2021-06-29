@@ -4,18 +4,16 @@ import StatusRepository from '../repositories/StatusRepository';
 import UserRepository from '../repositories/UserRepository';
 import LabelRepository from '../repositories/LabelRepository';
 
-const parseQuery = (querystring) =>
-  Object.entries(querystring).reduce((acc, [key, value]) => {
-    if (value) {
-      return { ...acc, [key]: value };
-    }
-    return acc;
-  }, {});
+const parseQuery = (querystring) => Object.entries(querystring).reduce((acc, [key, value]) => {
+  if (value) {
+    return { ...acc, [key]: value };
+  }
+  return acc;
+}, {});
 
-const parseLabels = (labels = []) =>
-  Array.isArray(labels)
-    ? labels.map((label) => ({ id: Number(label) }))
-    : [{ id: Number(labels) }];
+const parseLabels = (labels = []) => (Array.isArray(labels)
+  ? labels.map((label) => ({ id: Number(label) }))
+  : [{ id: Number(labels) }]);
 
 export default (app) => {
   const tasksRepository = new TaskRepository(app);
@@ -32,7 +30,7 @@ export default (app) => {
           parseQuery({
             ...req.query,
             creator: req.query.isCreatorUser ? req.user.id : '',
-          })
+          }),
         );
 
         const statuses = await statusRepository.getAll();
@@ -46,7 +44,7 @@ export default (app) => {
           labels,
           filters: req.query,
         });
-      }
+      },
     )
     .get(
       '/tasks/:id',
@@ -54,7 +52,7 @@ export default (app) => {
       async (req, reply) => {
         const task = await tasksRepository.getById(req.params.id);
         return reply.render('tasks/task', { task });
-      }
+      },
     )
     .get(
       '/tasks/new',
@@ -65,8 +63,10 @@ export default (app) => {
         const users = await userRepository.getAll();
         const labels = await labelRepository.getAll();
 
-        return reply.render('tasks/new', { task, statuses, users, labels });
-      }
+        return reply.render('tasks/new', {
+          task, statuses, users, labels,
+        });
+      },
     )
     .get(
       '/tasks/:id/edit',
@@ -77,8 +77,10 @@ export default (app) => {
         const users = await userRepository.getAll();
         const labels = await labelRepository.getAll();
 
-        return reply.render('tasks/edit', { task, statuses, users, labels });
-      }
+        return reply.render('tasks/edit', {
+          task, statuses, users, labels,
+        });
+      },
     )
     .post('/tasks', { preValidation: app.authenticate }, async (req, reply) => {
       const { data } = req.body;
@@ -147,7 +149,7 @@ export default (app) => {
             errors: error.data,
           });
         }
-      }
+      },
     )
     .delete(
       '/tasks/:id',
@@ -164,6 +166,6 @@ export default (app) => {
         }
 
         reply.redirect(app.reverse('tasks'));
-      }
+      },
     );
 };
