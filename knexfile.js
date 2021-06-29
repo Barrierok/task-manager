@@ -14,7 +14,7 @@ const connection = {
 const common = {
   useNullAsDefault: true,
   migrations: {
-    directory: path.resolve('migrations'),
+    directory: path.join(__dirname, 'server', 'migrations'),
   },
   ...knexSnakeCaseMappers(),
 };

@@ -38,7 +38,7 @@ export default (app) => {
       async (req, reply) => {
         const user = await userRepository.getById(req.params.id);
         return reply.render('users/edit', { user });
-      }
+      },
     )
     .post('/users', async (req, reply) => {
       try {
@@ -46,10 +46,10 @@ export default (app) => {
         await userRepository.insert(user);
 
         req.flash('info', i18next.t('flash.users.create.success'));
-        reply.redirect(app.reverse('root'));
+        return reply.redirect(app.reverse('root'));
       } catch (error) {
         req.flash('error', i18next.t('flash.users.create.error'));
-        reply.render('users/new', { user: req.body.data, errors: error.data });
+        return reply.render('users/new', { user: req.body.data, errors: error.data });
       }
     })
     .patch(
@@ -72,7 +72,7 @@ export default (app) => {
           req.flash('error', i18next.t('flash.users.edit.error'));
           return reply.render('users/edit', { user, errors: error.data });
         }
-      }
+      },
     )
     .delete(
       '/users/:id',
@@ -93,6 +93,6 @@ export default (app) => {
         }
 
         reply.redirect(app.reverse('users'));
-      }
+      },
     );
 };

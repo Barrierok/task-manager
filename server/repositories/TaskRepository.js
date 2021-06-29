@@ -7,7 +7,9 @@ export default class TaskRepository extends BaseRepository {
     this.model = app.objection.models.task;
   }
 
-  async getAll({ status, executor, label, creator }) {
+  async getAll({
+    status, executor, label, creator,
+  }) {
     const data = await this.model
       .query()
       .skipUndefined()
@@ -51,9 +53,9 @@ export default class TaskRepository extends BaseRepository {
       noUpdate: ['labels'],
     };
 
-    const upsertedData = await this.model.transaction((trx) =>
+    const upsertedData = await this.model.transaction((trx) => (
       this.model.query(trx).upsertGraphAndFetch(data, options)
-    );
+    ));
 
     this.logging(this.insert, upsertedData);
 
@@ -67,9 +69,9 @@ export default class TaskRepository extends BaseRepository {
       noUpdate: ['labels'],
     };
 
-    const upsertedData = await this.model.transaction((trx) =>
+    const upsertedData = await this.model.transaction((trx) => (
       this.model.query(trx).upsertGraphAndFetch(data, options)
-    );
+    ));
 
     this.logging(this.patch, upsertedData);
 

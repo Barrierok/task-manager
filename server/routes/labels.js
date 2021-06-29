@@ -11,15 +11,15 @@ export default (app) => {
       async (req, reply) => {
         const labels = await labelRepository.getAll();
         return reply.render('labels/index', { labels });
-      }
+      },
     )
     .get(
       '/labels/new',
       { name: 'newLabel', preValidation: app.authenticate },
       async (req, reply) => {
         const label = labelRepository.createModel();
-        reply.render('labels/new', { label });
-      }
+        return reply.render('labels/new', { label });
+      },
     )
     .get(
       '/labels/:id/edit',
@@ -27,7 +27,7 @@ export default (app) => {
       async (req, reply) => {
         const label = await labelRepository.getById(req.params.id);
         return reply.render('labels/edit', { label });
-      }
+      },
     )
     .post(
       '/labels',
@@ -40,12 +40,12 @@ export default (app) => {
           await labelRepository.insert(label);
 
           req.flash('info', i18next.t('flash.labels.create.success'));
-          reply.redirect(app.reverse('labels'));
+          return reply.redirect(app.reverse('labels'));
         } catch (error) {
           req.flash('error', i18next.t('flash.labels.create.error'));
-          reply.render('labels/new', { status: data, errors: error.data });
+          return reply.render('labels/new', { status: data, errors: error.data });
         }
-      }
+      },
     )
     .patch(
       '/labels/:id',
@@ -66,7 +66,7 @@ export default (app) => {
             errors: error.data,
           });
         }
-      }
+      },
     )
     .delete(
       '/labels/:id',
@@ -74,7 +74,7 @@ export default (app) => {
       async (req, reply) => {
         const tasks = await labelRepository.getRelatedData(
           req.params.id,
-          'tasks'
+          'tasks',
         );
 
         if (tasks.length > 0) {
@@ -85,6 +85,6 @@ export default (app) => {
         }
 
         reply.redirect(app.reverse('labels'));
-      }
+      },
     );
 };

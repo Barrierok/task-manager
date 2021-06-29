@@ -11,7 +11,7 @@ export default (app) => {
       async (req, reply) => {
         const statuses = await statusRepository.getAll();
         return reply.render('statuses/index', { statuses });
-      }
+      },
     )
     .get(
       '/statuses/new',
@@ -19,7 +19,7 @@ export default (app) => {
       (req, reply) => {
         const status = statusRepository.createModel();
         reply.render('statuses/new', { status });
-      }
+      },
     )
     .get(
       '/statuses/:id/edit',
@@ -30,7 +30,7 @@ export default (app) => {
       async (req, reply) => {
         const status = await statusRepository.getById(req.params.id);
         return reply.render('statuses/edit', { status });
-      }
+      },
     )
     .post(
       '/statuses',
@@ -43,15 +43,15 @@ export default (app) => {
           await statusRepository.insert(status);
 
           req.flash('info', i18next.t('flash.statuses.create.success'));
-          reply.redirect(app.reverse('statuses'));
+          return reply.redirect(app.reverse('statuses'));
         } catch (error) {
           req.flash('error', i18next.t('flash.statuses.create.error'));
-          reply.render('statuses/new', {
+          return reply.render('statuses/new', {
             status: data,
             errors: error.data,
           });
         }
-      }
+      },
     )
     .patch(
       '/statuses/:id',
@@ -72,7 +72,7 @@ export default (app) => {
             errors: error.data,
           });
         }
-      }
+      },
     )
     .delete(
       '/statuses/:id',
@@ -80,7 +80,7 @@ export default (app) => {
       async (req, reply) => {
         const tasks = await statusRepository.getRelatedData(
           req.params.id,
-          'tasks'
+          'tasks',
         );
 
         if (tasks.length > 0) {
@@ -91,6 +91,6 @@ export default (app) => {
         }
 
         reply.redirect(app.reverse('statuses'));
-      }
+      },
     );
 };

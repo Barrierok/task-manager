@@ -10,7 +10,7 @@ export default class BaseRepository {
         method: method.name,
         data,
       },
-      'ORM queries'
+      'ORM queries',
     );
   };
 
