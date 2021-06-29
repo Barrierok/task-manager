@@ -99,14 +99,14 @@ export default (app) => {
         });
 
         req.flash('info', i18next.t('flash.tasks.create.success'));
-        reply.redirect(app.reverse('tasks'));
+        return reply.redirect(app.reverse('tasks'));
       } catch (error) {
         const statuses = await statusRepository.getAll();
         const users = await userRepository.getAll();
         const labels = await labelRepository.getAll();
 
         req.flash('error', i18next.t('flash.tasks.create.error'));
-        reply.render('tasks/new', {
+        return reply.render('tasks/new', {
           task: { ...data, labels: parseLabels(data.labels) },
           statuses,
           users,

@@ -18,7 +18,7 @@ export default (app) => {
       { name: 'newLabel', preValidation: app.authenticate },
       async (req, reply) => {
         const label = labelRepository.createModel();
-        reply.render('labels/new', { label });
+        return reply.render('labels/new', { label });
       },
     )
     .get(
@@ -40,10 +40,10 @@ export default (app) => {
           await labelRepository.insert(label);
 
           req.flash('info', i18next.t('flash.labels.create.success'));
-          reply.redirect(app.reverse('labels'));
+          return reply.redirect(app.reverse('labels'));
         } catch (error) {
           req.flash('error', i18next.t('flash.labels.create.error'));
-          reply.render('labels/new', { status: data, errors: error.data });
+          return reply.render('labels/new', { status: data, errors: error.data });
         }
       },
     )

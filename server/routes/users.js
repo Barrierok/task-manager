@@ -46,10 +46,10 @@ export default (app) => {
         await userRepository.insert(user);
 
         req.flash('info', i18next.t('flash.users.create.success'));
-        reply.redirect(app.reverse('root'));
+        return reply.redirect(app.reverse('root'));
       } catch (error) {
         req.flash('error', i18next.t('flash.users.create.error'));
-        reply.render('users/new', { user: req.body.data, errors: error.data });
+        return reply.render('users/new', { user: req.body.data, errors: error.data });
       }
     })
     .patch(

@@ -43,10 +43,10 @@ export default (app) => {
           await statusRepository.insert(status);
 
           req.flash('info', i18next.t('flash.statuses.create.success'));
-          reply.redirect(app.reverse('statuses'));
+          return reply.redirect(app.reverse('statuses'));
         } catch (error) {
           req.flash('error', i18next.t('flash.statuses.create.error'));
-          reply.render('statuses/new', {
+          return reply.render('statuses/new', {
             status: data,
             errors: error.data,
           });
