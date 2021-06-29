@@ -87,6 +87,8 @@ const initRollbar = (app) => {
     captureUnhandledRejections: true,
   });
 
+  rollbar.log('Rollbar initialized');
+
   app.setErrorHandler((error, request, reply) => {
     rollbar.error(`Error: ${error}`, request, reply);
   });
