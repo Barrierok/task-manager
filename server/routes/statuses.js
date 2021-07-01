@@ -45,7 +45,7 @@ export default (app) => {
           req.flash('info', i18next.t('flash.statuses.create.success'));
           return reply.redirect(app.reverse('statuses'));
         } catch (error) {
-          reply.unprocessableEntity();
+          reply.code = 422;
           req.flash('error', i18next.t('flash.statuses.create.error'));
           return reply.render('statuses/new', {
             status: data,
@@ -67,7 +67,7 @@ export default (app) => {
           req.flash('info', i18next.t('flash.statuses.edit.success'));
           return reply.redirect(app.reverse('statuses'));
         } catch (error) {
-          reply.unprocessableEntity();
+          reply.code = 422;
           req.flash('error', i18next.t('flash.statuses.edit.error'));
           return reply.render('statuses/edit', {
             status: data,
