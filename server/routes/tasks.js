@@ -7,7 +7,7 @@ import LabelRepository from '../repositories/LabelRepository';
 
 const filterQuery = (querystring) => _.omitBy(querystring, _.isEmpty);
 
-const parseLabels = (labels = []) => [labels].flatMap((label) => ({ id: Number(label) }));
+const parseLabels = (labels = []) => [labels].flat().map((label) => ({ id: Number(label) }));
 
 export default (app) => {
   const tasksRepository = new TaskRepository(app);
