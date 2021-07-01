@@ -48,9 +48,8 @@ export default (app) => {
         req.flash('info', i18next.t('flash.users.create.success'));
         return reply.redirect(app.reverse('root'));
       } catch (error) {
-        reply.code = 422;
         req.flash('error', i18next.t('flash.users.create.error'));
-        return reply.render('users/new', { user: req.body.data, errors: error.data });
+        return reply.code(422).render('users/new', { user: req.body.data, errors: error.data });
       }
     })
     .patch(
@@ -70,9 +69,8 @@ export default (app) => {
         } catch (error) {
           const user = await userRepository.getById(req.params.id);
 
-          reply.code = 422;
           req.flash('error', i18next.t('flash.users.edit.error'));
-          return reply.render('users/edit', { user, errors: error.data });
+          return reply.code(422).render('users/edit', { user, errors: error.data });
         }
       },
     )

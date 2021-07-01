@@ -99,9 +99,8 @@ export default (app) => {
         const users = await userRepository.getAll();
         const labels = await labelRepository.getAll();
 
-        reply.code = 422;
         req.flash('error', i18next.t('flash.tasks.create.error'));
-        return reply.render('tasks/new', {
+        return reply.code(422).render('tasks/new', {
           task: { ...data, labels: parseLabels(data.labels) },
           statuses,
           users,
@@ -135,9 +134,8 @@ export default (app) => {
           const users = await userRepository.getAll();
           const labels = await labelRepository.getAll();
 
-          reply.code = 422;
           req.flash('error', i18next.t('flash.tasks.edit.error'));
-          return reply.render('tasks/edit', {
+          return reply.code(422).render('tasks/edit', {
             task: { id, ...data, labels: parseLabels(data.labels) },
             statuses,
             users,
