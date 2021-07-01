@@ -180,11 +180,6 @@ describe('test tasks CRUD', () => {
   });
 
   afterEach(async () => {
-    await app.inject({
-      method: 'DELETE',
-      url: app.reverse('session'),
-      cookies: cookie,
-    });
     await knex.migrate.rollback();
   });
 

@@ -43,7 +43,7 @@ export default (app) => {
           return reply.redirect(app.reverse('labels'));
         } catch (error) {
           req.flash('error', i18next.t('flash.labels.create.error'));
-          return reply.render('labels/new', { status: data, errors: error.data });
+          return reply.code(422).render('labels/new', { status: data, errors: error.data });
         }
       },
     )
@@ -61,7 +61,7 @@ export default (app) => {
           return reply.redirect(app.reverse('labels'));
         } catch (error) {
           req.flash('error', i18next.t('flash.labels.edit.error'));
-          return reply.render('labels/edit', {
+          return reply.code(422).render('labels/edit', {
             label: data,
             errors: error.data,
           });

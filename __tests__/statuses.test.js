@@ -85,7 +85,7 @@ describe('test statuses CRUD', () => {
       },
     });
 
-    expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(422);
   });
 
   it('patch status', async () => {
@@ -147,15 +147,10 @@ describe('test statuses CRUD', () => {
   });
 
   afterEach(async () => {
-    await app.inject({
-      method: 'DELETE',
-      url: app.reverse('session'),
-      cookies: cookie,
-    });
     await knex.migrate.rollback();
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     app.close();
   });
 });

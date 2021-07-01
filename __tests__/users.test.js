@@ -77,7 +77,7 @@ describe('test users CRUD', () => {
         },
       });
 
-      expect(response.statusCode).toBe(200);
+      expect(response.statusCode).toBe(422);
     });
   });
 
@@ -214,14 +214,6 @@ describe('test users CRUD', () => {
       const foundUser = await models.user.query().findById(otherUser.id);
 
       expect(foundUser).toMatchObject(otherUser);
-    });
-
-    afterEach(async () => {
-      await app.inject({
-        method: 'DELETE',
-        url: app.reverse('session'),
-        cookies: cookie,
-      });
     });
   });
 

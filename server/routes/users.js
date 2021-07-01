@@ -3,21 +3,21 @@ import i18next from 'i18next';
 import UserRepository from '../repositories/UserRepository';
 import TaskRepository from '../repositories/TaskRepository';
 
-const checkRights = (app) => async (req, reply) => {
-  const {
-    params: { id: paramId },
-    user: { id: userId },
-  } = req;
-
-  if (Number(paramId) !== userId) {
-    req.flash('error', i18next.t('flash.session.edit.error'));
-    reply.redirect(app.reverse('users'));
-  }
-};
-
 export default (app) => {
   const userRepository = new UserRepository(app);
   const taskRepository = new TaskRepository(app);
+
+  const checkRights = async (req, reply) => {
+    const {
+      params: { id: paramId },
+      user: { id: userId },
+    } = req;
+
+    if (Number(paramId) !== userId) {
+      req.flash('error', i18next.t('flash.session.edit.error'));
+      reply.redirect(app.reverse('users'));
+    }
+  };
 
   app
     .get('/users', { name: 'users' }, async (req, reply) => {
@@ -33,7 +33,7 @@ export default (app) => {
       {
         name: 'editUser',
         preValidation: app.authenticate,
-        preHandler: checkRights(app),
+        preHandler: checkRights,
       },
       async (req, reply) => {
         const user = await userRepository.getById(req.params.id);
@@ -49,7 +49,7 @@ export default (app) => {
         return reply.redirect(app.reverse('root'));
       } catch (error) {
         req.flash('error', i18next.t('flash.users.create.error'));
-        return reply.render('users/new', { user: req.body.data, errors: error.data });
+        return reply.code(422).render('users/new', { user: req.body.data, errors: error.data });
       }
     })
     .patch(
@@ -57,7 +57,7 @@ export default (app) => {
       {
         name: 'patchUser',
         preValidation: app.authenticate,
-        preHandler: checkRights(app),
+        preHandler: checkRights,
       },
       async (req, reply) => {
         try {
@@ -70,7 +70,7 @@ export default (app) => {
           const user = await userRepository.getById(req.params.id);
 
           req.flash('error', i18next.t('flash.users.edit.error'));
-          return reply.render('users/edit', { user, errors: error.data });
+          return reply.code(422).render('users/edit', { user, errors: error.data });
         }
       },
     )
@@ -79,7 +79,7 @@ export default (app) => {
       {
         name: 'deleteUser',
         preValidation: app.authenticate,
-        preHandler: checkRights(app),
+        preHandler: checkRights,
       },
       async (req, reply) => {
         const tasks = await taskRepository.findByUser(req.params.id);

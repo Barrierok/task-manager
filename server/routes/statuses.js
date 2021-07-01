@@ -46,7 +46,7 @@ export default (app) => {
           return reply.redirect(app.reverse('statuses'));
         } catch (error) {
           req.flash('error', i18next.t('flash.statuses.create.error'));
-          return reply.render('statuses/new', {
+          return reply.code(422).render('statuses/new', {
             status: data,
             errors: error.data,
           });
@@ -67,7 +67,7 @@ export default (app) => {
           return reply.redirect(app.reverse('statuses'));
         } catch (error) {
           req.flash('error', i18next.t('flash.statuses.edit.error'));
-          return reply.render('statuses/edit', {
+          return reply.code(422).render('statuses/edit', {
             status: data,
             errors: error.data,
           });

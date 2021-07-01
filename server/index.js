@@ -81,6 +81,10 @@ const addHooks = (app) => {
 };
 
 const initRollbar = (app) => {
+  if (!isProduction) {
+    return;
+  }
+
   const rollbar = new Rollbar({
     accessToken: process.env.ROLLBAR_TOKEN,
     captureUncaught: true,
