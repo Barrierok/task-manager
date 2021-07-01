@@ -42,6 +42,7 @@ export default (app) => {
           req.flash('info', i18next.t('flash.labels.create.success'));
           return reply.redirect(app.reverse('labels'));
         } catch (error) {
+          reply.unprocessableEntity();
           req.flash('error', i18next.t('flash.labels.create.error'));
           return reply.render('labels/new', { status: data, errors: error.data });
         }
@@ -60,6 +61,7 @@ export default (app) => {
           req.flash('info', i18next.t('flash.labels.edit.success'));
           return reply.redirect(app.reverse('labels'));
         } catch (error) {
+          reply.unprocessableEntity();
           req.flash('error', i18next.t('flash.labels.edit.error'));
           return reply.render('labels/edit', {
             label: data,

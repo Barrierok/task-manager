@@ -25,10 +25,10 @@ export default class TaskRepository extends BaseRepository {
   }
 
   async getById(id) {
-    const [data] = await this.model
+    const data = await this.model
       .query()
-      .where('id', id)
-      .withGraphFetched('[status, creator, executor, labels]');
+      .withGraphFetched('[status, creator, executor, labels]')
+      .findById(id);
 
     this.logging(this.getById, data);
 

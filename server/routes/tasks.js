@@ -1,19 +1,13 @@
+import _ from 'lodash';
 import i18next from 'i18next';
 import TaskRepository from '../repositories/TaskRepository';
 import StatusRepository from '../repositories/StatusRepository';
 import UserRepository from '../repositories/UserRepository';
 import LabelRepository from '../repositories/LabelRepository';
 
-const parseQuery = (querystring) => Object.entries(querystring).reduce((acc, [key, value]) => {
-  if (value) {
-    return { ...acc, [key]: value };
-  }
-  return acc;
-}, {});
+const filterQuery = (querystring) => _.omitBy(querystring, _.isEmpty);
 
-const parseLabels = (labels = []) => (Array.isArray(labels)
-  ? labels.map((label) => ({ id: Number(label) }))
-  : [{ id: Number(labels) }]);
+const parseLabels = (labels = []) => [labels].flatMap((label) => ({ id: Number(label) }));
 
 export default (app) => {
   const tasksRepository = new TaskRepository(app);
@@ -27,7 +21,7 @@ export default (app) => {
       { name: 'tasks', preValidation: app.authenticate },
       async (req, reply) => {
         const tasks = await tasksRepository.getAll(
-          parseQuery({
+          filterQuery({
             ...req.query,
             creator: req.query.isCreatorUser ? req.user.id : '',
           }),
@@ -105,6 +99,7 @@ export default (app) => {
         const users = await userRepository.getAll();
         const labels = await labelRepository.getAll();
 
+        reply.unprocessableEntity();
         req.flash('error', i18next.t('flash.tasks.create.error'));
         return reply.render('tasks/new', {
           task: { ...data, labels: parseLabels(data.labels) },
@@ -140,6 +135,7 @@ export default (app) => {
           const users = await userRepository.getAll();
           const labels = await labelRepository.getAll();
 
+          reply.unprocessableEntity();
           req.flash('error', i18next.t('flash.tasks.edit.error'));
           return reply.render('tasks/edit', {
             task: { id, ...data, labels: parseLabels(data.labels) },
