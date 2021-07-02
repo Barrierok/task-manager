@@ -1,13 +1,11 @@
-import UserRepository from '../server/repositories/UserRepository';
-
 /**
  * @param {Object} app
  * @param {Object} user
  * @return {Promise<{ userId: string, cookie: Object }>}
  */
 export default async (app, user) => {
-  const userRepository = new UserRepository(app);
-  const userId = (await userRepository.insert(user)).id;
+  const userModel = app.objection.models.user;
+  const userId = (await userModel.query().insert(user)).id;
 
   const responseSignIn = await app.inject({
     method: 'POST',

@@ -1,35 +1,40 @@
 import _ from 'lodash';
 import i18next from 'i18next';
-import TaskRepository from '../repositories/TaskRepository';
-import StatusRepository from '../repositories/StatusRepository';
-import UserRepository from '../repositories/UserRepository';
-import LabelRepository from '../repositories/LabelRepository';
 
 const filterQuery = (querystring) => _.omitBy(querystring, _.isEmpty);
 
 const parseLabels = (labels = []) => [labels].flat().map((label) => ({ id: Number(label) }));
 
 export default (app) => {
-  const tasksRepository = new TaskRepository(app);
-  const statusRepository = new StatusRepository(app);
-  const userRepository = new UserRepository(app);
-  const labelRepository = new LabelRepository(app);
+  const taskModel = app.objection.models.task;
+  const statusModel = app.objection.models.status;
+  const labelModel = app.objection.models.label;
+  const userModel = app.objection.models.user;
 
   app
     .get(
       '/tasks',
       { name: 'tasks', preValidation: app.authenticate },
       async (req, reply) => {
-        const tasks = await tasksRepository.getAll(
-          filterQuery({
-            ...req.query,
-            creator: req.query.isCreatorUser ? req.user.id : '',
-          }),
-        );
+        const {
+          status, executor, label, creator,
+        } = filterQuery({
+          ...req.query,
+          creator: req.query.isCreatorUser ? req.user.id : '',
+        });
 
-        const statuses = await statusRepository.getAll();
-        const users = await userRepository.getAll();
-        const labels = await labelRepository.getAll();
+        const tasks = await taskModel
+          .query()
+          .skipUndefined()
+          .withGraphJoined('[status, creator, executor, labels]')
+          .where('executorId', executor)
+          .where('creatorId', creator)
+          .where('labels:id', label)
+          .where('statusId', status);
+
+        const statuses = await statusModel.query();
+        const users = await userModel.query();
+        const labels = await labelModel.query();
 
         return reply.render('tasks/index', {
           tasks,
@@ -44,7 +49,11 @@ export default (app) => {
       '/tasks/:id',
       { name: 'task', preValidation: app.authenticate },
       async (req, reply) => {
-        const task = await tasksRepository.getById(req.params.id);
+        const task = await taskModel
+          .query()
+          .withGraphFetched('[status, creator, executor, labels]')
+          .findById(req.params.id);
+
         return reply.render('tasks/task', { task });
       },
     )
@@ -52,10 +61,10 @@ export default (app) => {
       '/tasks/new',
       { name: 'newTask', preValidation: app.authenticate },
       async (req, reply) => {
-        const task = tasksRepository.createModel();
-        const statuses = await statusRepository.getAll();
-        const users = await userRepository.getAll();
-        const labels = await labelRepository.getAll();
+        const task = new app.objection.models.task();
+        const statuses = await statusModel.query();
+        const users = await userModel.query();
+        const labels = await labelModel.query();
 
         return reply.render('tasks/new', {
           task, statuses, users, labels,
@@ -66,10 +75,14 @@ export default (app) => {
       '/tasks/:id/edit',
       { name: 'editTask', preValidation: app.authenticate },
       async (req, reply) => {
-        const task = await tasksRepository.getById(req.params.id);
-        const statuses = await statusRepository.getAll();
-        const users = await userRepository.getAll();
-        const labels = await labelRepository.getAll();
+        const task = await taskModel
+          .query()
+          .withGraphFetched('[status, creator, executor, labels]')
+          .findById(req.params.id);
+
+        const statuses = await statusModel.query();
+        const users = await userModel.query();
+        const labels = await labelModel.query();
 
         return reply.render('tasks/edit', {
           task, statuses, users, labels,
@@ -82,22 +95,31 @@ export default (app) => {
       try {
         const { labels, ...taskData } = data;
 
-        const task = await tasksRepository.validate({
+        const task = await taskModel.fromJson({
           ...taskData,
           creatorId: req.user.id,
         });
 
-        await tasksRepository.insert({
-          ...task,
-          labels: parseLabels(labels),
-        });
+        await taskModel.transaction((trx) => (
+          taskModel.query(trx).upsertGraphAndFetch(
+            {
+              ...task,
+              labels: parseLabels(labels),
+            },
+            {
+              relate: true,
+              unrelate: true,
+              noUpdate: ['labels'],
+            },
+          )
+        ));
 
         req.flash('info', i18next.t('flash.tasks.create.success'));
         return reply.redirect(app.reverse('tasks'));
       } catch (error) {
-        const statuses = await statusRepository.getAll();
-        const users = await userRepository.getAll();
-        const labels = await labelRepository.getAll();
+        const statuses = await statusModel.query();
+        const users = await userModel.query();
+        const labels = await labelModel.query();
 
         req.flash('error', i18next.t('flash.tasks.create.error'));
         return reply.code(422).render('tasks/new', {
@@ -119,20 +141,29 @@ export default (app) => {
         try {
           const { labels = [], ...taskData } = data;
 
-          const task = await tasksRepository.validate(taskData);
+          const task = await taskModel.fromJson(taskData);
 
-          await tasksRepository.patch({
-            id,
-            ...task,
-            labels: parseLabels(labels),
-          });
+          await taskModel.transaction((trx) => (
+            taskModel.query(trx).upsertGraphAndFetch(
+              {
+                id,
+                ...task,
+                labels: parseLabels(labels),
+              },
+              {
+                relate: true,
+                unrelate: true,
+                noUpdate: ['labels'],
+              },
+            )
+          ));
 
           req.flash('info', i18next.t('flash.tasks.edit.success'));
           return reply.redirect(app.reverse('tasks'));
         } catch (error) {
-          const statuses = await statusRepository.getAll();
-          const users = await userRepository.getAll();
-          const labels = await labelRepository.getAll();
+          const statuses = await statusModel.query();
+          const users = await userModel.query();
+          const labels = await labelModel.query();
 
           req.flash('error', i18next.t('flash.tasks.edit.error'));
           return reply.code(422).render('tasks/edit', {
@@ -149,11 +180,14 @@ export default (app) => {
       '/tasks/:id',
       { name: 'deleteTask', preValidation: app.authenticate },
       async (req, reply) => {
-        const task = await tasksRepository.getById(req.params.id);
+        const task = await taskModel
+          .query()
+          .withGraphFetched('[status, creator, executor, labels]')
+          .findById(req.params.id);
 
         if (task.creatorId === req.user.id) {
           await task.$relatedQuery('labels').unrelate();
-          await tasksRepository.deleteById(req.params.id);
+          await taskModel.query().deleteById(req.params.id);
           req.flash('info', i18next.t('flash.tasks.delete.success'));
         } else {
           req.flash('error', i18next.t('flash.tasks.delete.error'));
