@@ -1,15 +1,14 @@
 import i18next from 'i18next';
-import StatusRepository from '../repositories/StatusRepository';
 
 export default (app) => {
-  const statusRepository = new StatusRepository(app);
+  const statusModel = app.objection.models.status;
 
   app
     .get(
       '/statuses',
       { name: 'statuses', preValidation: app.authenticate },
       async (req, reply) => {
-        const statuses = await statusRepository.getAll();
+        const statuses = await statusModel.query();
         return reply.render('statuses/index', { statuses });
       },
     )
@@ -17,7 +16,7 @@ export default (app) => {
       '/statuses/new',
       { name: 'newStatus', preValidation: app.authenticate },
       (req, reply) => {
-        const status = statusRepository.createModel();
+        const status = new app.objection.models.status();
         reply.render('statuses/new', { status });
       },
     )
@@ -28,7 +27,7 @@ export default (app) => {
         preValidation: app.authenticate,
       },
       async (req, reply) => {
-        const status = await statusRepository.getById(req.params.id);
+        const status = await statusModel.query().findById(req.params.id);
         return reply.render('statuses/edit', { status });
       },
     )
@@ -39,8 +38,8 @@ export default (app) => {
         const { data } = req.body;
 
         try {
-          const status = await statusRepository.validate(data);
-          await statusRepository.insert(status);
+          const status = await statusModel.fromJson(data);
+          await statusModel.query().insert(status);
 
           req.flash('info', i18next.t('flash.statuses.create.success'));
           return reply.redirect(app.reverse('statuses'));
@@ -60,8 +59,9 @@ export default (app) => {
         const { data } = req.body;
 
         try {
-          const status = await statusRepository.validate(data);
-          await statusRepository.patch(req.params.id, status);
+          const statusData = await statusModel.fromJson(data);
+          const status = await statusModel.query().findById(req.params.id);
+          await status.$query().patch(statusData);
 
           req.flash('info', i18next.t('flash.statuses.edit.success'));
           return reply.redirect(app.reverse('statuses'));
@@ -78,15 +78,12 @@ export default (app) => {
       '/statuses/:id',
       { name: 'deleteStatus', preValidation: app.authenticate },
       async (req, reply) => {
-        const tasks = await statusRepository.getRelatedData(
-          req.params.id,
-          'tasks',
-        );
+        const tasks = await statusModel.relatedQuery('tasks').for(req.params.id);
 
         if (tasks.length > 0) {
           req.flash('error', i18next.t('flash.statuses.delete.error'));
         } else {
-          await statusRepository.deleteById(req.params.id);
+          await statusModel.query().deleteById(req.params.id);
           req.flash('info', i18next.t('flash.statuses.delete.success'));
         }
 

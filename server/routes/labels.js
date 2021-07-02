@@ -1,15 +1,14 @@
 import i18next from 'i18next';
-import LabelRepository from '../repositories/LabelRepository';
 
 export default (app) => {
-  const labelRepository = new LabelRepository(app);
+  const labelModel = app.objection.models.label;
 
   app
     .get(
       '/labels',
       { name: 'labels', preValidation: app.authenticate },
       async (req, reply) => {
-        const labels = await labelRepository.getAll();
+        const labels = await labelModel.query();
         return reply.render('labels/index', { labels });
       },
     )
@@ -17,7 +16,7 @@ export default (app) => {
       '/labels/new',
       { name: 'newLabel', preValidation: app.authenticate },
       async (req, reply) => {
-        const label = labelRepository.createModel();
+        const label = new app.objection.models.label();
         return reply.render('labels/new', { label });
       },
     )
@@ -25,7 +24,7 @@ export default (app) => {
       '/labels/:id/edit',
       { name: 'editLabel', preValidation: app.authenticate },
       async (req, reply) => {
-        const label = await labelRepository.getById(req.params.id);
+        const label = await labelModel.query().findById(req.params.id);
         return reply.render('labels/edit', { label });
       },
     )
@@ -36,8 +35,8 @@ export default (app) => {
         const { data } = req.body;
 
         try {
-          const label = await labelRepository.validate(data);
-          await labelRepository.insert(label);
+          const label = await labelModel.fromJson(data);
+          await labelModel.query().insert(label);
 
           req.flash('info', i18next.t('flash.labels.create.success'));
           return reply.redirect(app.reverse('labels'));
@@ -54,8 +53,9 @@ export default (app) => {
         const { data } = req.body;
 
         try {
-          const label = await labelRepository.validate(data);
-          await labelRepository.patch(req.params.id, label);
+          const labelData = await labelModel.fromJson(data);
+          const label = await labelModel.query().findById(req.params.id);
+          await label.$query().patch(labelData);
 
           req.flash('info', i18next.t('flash.labels.edit.success'));
           return reply.redirect(app.reverse('labels'));
@@ -72,15 +72,12 @@ export default (app) => {
       '/labels/:id',
       { name: 'deleteLabel', preValidation: app.authenticate },
       async (req, reply) => {
-        const tasks = await labelRepository.getRelatedData(
-          req.params.id,
-          'tasks',
-        );
+        const tasks = await labelModel.relatedQuery('tasks').for(req.params.id);
 
         if (tasks.length > 0) {
           req.flash('error', i18next.t('flash.labels.delete.error'));
         } else {
-          await labelRepository.deleteById(req.params.id);
+          await labelModel.query().deleteById(req.params.id);
           req.flash('info', i18next.t('flash.labels.delete.success'));
         }
 
