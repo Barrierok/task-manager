@@ -20,7 +20,7 @@ export default (app) => {
           status, executor, label, creator,
         } = filterQuery({
           ...req.query,
-          creator: req.query.isCreatorUser ? req.user.id : '',
+          creator: req.query.isCreatorUser === 'on' ? `${req.user.id}` : '',
         });
 
         const tasks = await taskModel
@@ -29,7 +29,7 @@ export default (app) => {
           .withGraphJoined('[status, creator, executor, labels]')
           .where('executorId', executor)
           .where('creatorId', creator)
-          .where('labels:id', label)
+          .where('labelId', label)
           .where('statusId', status);
 
         const statuses = await statusModel.query();
