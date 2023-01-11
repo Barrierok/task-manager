@@ -48,7 +48,7 @@
     "fastify-static": "^4.2.2",
     "i18next": "^20.3.1",
     "jquery": "^3.6.0",
-    "knex": "^0.21.19",
+    "knex": "^2.4.0",
     "lodash": "^4.17.21",
     "mini-css-extract-plugin": "^1.6.0",
     "objection": "^2.2.15",
